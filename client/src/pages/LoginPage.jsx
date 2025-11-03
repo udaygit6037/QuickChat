@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import assets from '../assets/assets';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 
 const LoginPage = () => {
   const [currState, setCurrState] = useState('signup'); // signup | login
@@ -8,16 +10,30 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [bio, setBio] = useState('');
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
+  const {login}= useContext(AuthContext)
+  // ... (inside the component)
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!email || !password || (currState === 'signup' && (!fullName || !bio))) {
-      alert('Please fill all required fields.');
-      return;
-    }
-    setIsDataSubmitted(true);
-    // Add API call or further logic here
-  };
+// ...
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!email || !password || (currState === 'signup' && (!fullName || !bio))) {
+            alert('Please fill all required fields.');
+            return;
+        }
+        setIsDataSubmitted(true);
+        // 🐛 CRITICAL FIX APPLIED HERE: Compare currState against the lowercase string 'signup'
+        const authState = currState === 'signup' ? 'signup' : 'login';
+        
+        // Pass only required data: bio/fullName are only needed for signup
+        const credentials = { 
+            email, 
+            password, 
+            ...(authState === 'signup' && { fullName, bio }) // Spread if signing up
+        };
+        
+        login(authState, credentials);
+    };
+// ...
 
   return (
     <div className='min-h-screen bg-cover bg-center flex items-center justify-center gap-8 sm:justify-evenly max-sm:flex-col backdrop-blur-2xl'>
