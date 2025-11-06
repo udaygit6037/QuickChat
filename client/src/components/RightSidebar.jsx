@@ -1,50 +1,50 @@
-import React from 'react'
-import assets, { imagesDummyData } from '../assets/assets'
+import React from 'react';
+import assets from '../assets/assets';
 
-const RightSidebar = ({ selectedUser }) => {
-  if (!selectedUser) return null
+const RightSidebar = ({ selectedUser, messages }) => {
+  
+  if (!selectedUser) return null;
+
+  const userMedia = messages.filter(
+    msg =>
+      (msg.senderId === selectedUser._id || msg.receiverId === selectedUser._id) && msg.image
+  );
 
   return (
-    <div className="bg-[#8185B2]/10 text-white w-full relative overflow-y-scroll max-md:hidden">
+    <div className="bg-[#282142]/80 p-4 flex flex-col gap-5 overflow-y-auto">
       {/* User Info */}
-      <div className="pt-16 flex flex-col items-center gap-2 text-xs font-light mx-auto">
-        <img
-          src={selectedUser.profilePic || assets.avatar_icon}
-          alt="User profile"
-          className="w-20 aspect-square rounded-full"
-        />
-        <h1 className="px-10 text-xl font-medium mx-auto flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-500"></span>
-          {selectedUser.fullName}
-        </h1>
-        <p className="px-10 mx-auto text-center">{selectedUser.bio}</p>
+      <div className="flex flex-col items-center gap-2">
+        <img src={selectedUser.profilePic} alt={selectedUser.fullName} className="w-16 rounded-full" />
+        <p className="text-white font-medium">{selectedUser.fullName}</p>
+        <p className="text-gray-400 text-sm text-center">{selectedUser.bio}</p>
       </div>
 
-      {/* Divider */}
-      <hr className="border-[#ffffff50] my-4" />
-
-      {/* Media Section */}
-      <div className="px-4">
-        <p className="text-sm font-medium mb-2">Media</p>
-        <div className="max-h-[200px] overflow-y-scroll grid grid-cols-2 gap-2 opacity-80">
-          {imagesDummyData.map((url, index) => (
-            <div
-              key={index}
-              onClick={() => window.open(url, '_blank')}
-              className="cursor-pointer rounded"
-            >
-              <img src={url} alt={`Media ${index + 1}`} className="w-full h-auto rounded-md" />
-            </div>
-          ))}
+      {/* Shared Media */}
+      <div>
+        <p className="text-gray-300 font-semibold mb-2">Shared Media</p>
+        <div className="flex flex-wrap gap-2">
+          {userMedia.length > 0 ? (
+            userMedia.map((msg, idx) => (
+              <a key={idx} href={msg.image} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={msg.image}
+                  alt="media"
+                  className="w-20 h-20 object-cover rounded-lg cursor-pointer"
+                />
+              </a>
+            ))
+          ) : (
+            <p className="text-gray-500 text-sm">No media shared</p>
+          )}
         </div>
       </div>
 
       {/* Logout Button */}
-      <button className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-400 to-violet-600 text-white border-none text-sm font-light py-2 px-20 rounded-full cursor-pointer">
+      <button className="mt-auto bg-violet-500 text-white py-2 rounded-lg hover:bg-violet-600 transition">
         Logout
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default RightSidebar
+export default RightSidebar;

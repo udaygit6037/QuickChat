@@ -1,15 +1,21 @@
 import mongoose from "mongoose";
 
 export const connectDB = async () => {
-    try {
-        // Use the Atlas URI from the environment variable
-        await mongoose.connect(process.env.MONGODB_URI, { 
-            dbName: 'chat-app' // 👈 FIX: Explicitly set the database name here
-        }); 
+  try {
+    // Await the connection to be established first.
+    await mongoose.connect(`${process.env.MONGODB_URI}/chat-app`);
+    
+    // Log the success message after the connection is successful.
+    console.log('Database connected successfully');
 
-        console.log("MongoDB connected successfully to database: chat-app");
-    } catch (error) {
-        console.error("MongoDB connection failed:", error);
-        process.exit(1); 
-    }
+    // You can also listen for disconnection events here if needed
+    mongoose.connection.on('disconnected', () => {
+      console.log('Database disconnected');
+    });
+
+  } catch (error) {
+    console.error("Error connecting to database:", error.message);
+    // Exit process with failure
+    process.exit(1);
+  }
 };

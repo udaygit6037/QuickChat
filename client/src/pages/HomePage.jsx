@@ -1,64 +1,33 @@
-// import React, { useState } from 'react'
-// import Sidebar from '../components/Sidebar.jsx'
-// import ChatContainer from '../components/ChatContainer.jsx'
-// import RightSidebar from '../components/RightSidebar.jsx'
-
-// const HomePage = () => {
-//   const [selectedUser, setSelectedUser] = useState(false)
-
-//   return (
-//     <div className="w-full h-screen overflow-hidden max-w-screen-xl mx-auto px-4 py-6">
-//       <div
-//         className={`backdrop-blur-xl border-2 border-gray-600 rounded-2xl overflow-hidden h-full grid relative ${selectedUser
-//           ? 'grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_2fr_1fr]'
-//           : 'grid-cols-1 md:grid-cols-2'
-//           }`}
-//       >
-//         <Sidebar selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
-//         <ChatContainer selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
-//         <RightSidebar selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default HomePage
-
-
-import React, { useState } from 'react'
-import Sidebar from '../components/Sidebar.jsx'
-import ChatContainer from '../components/ChatContainer.jsx'
-import RightSidebar from '../components/RightSidebar.jsx'
+import React, { useState } from 'react';
+import Sidebar from '../components/Sidebar';
+import ChatContainer from '../components/ChatContainer';
+import RightSidebar from '../components/RightSidebar';
+import { messagesDummyData } from '../assets/assets';
 
 const HomePage = () => {
-  // Use null to represent no selected user object/ID
-  const [selectedUser, setSelectedUser] = useState(null)
-
-  // Determine if the RightSidebar should be visible
-  const isRightSidebarVisible = selectedUser;
-
-  // Set the grid columns dynamically
-  const gridColumns = isRightSidebarVisible
-    // Three columns: Sidebar | Chat | RightSidebar
-    ? 'grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_2fr_1fr]'
-    // Two columns: Sidebar | ChatContainer (occupies the remaining space)
-    : 'grid-cols-1 md:grid-cols-[1fr_3fr]' 
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [messages, setMessages] = useState(messagesDummyData);
 
   return (
-    <div className="w-full h-screen overflow-hidden max-w-screen-xl mx-auto px-4 py-6">
+    <div className="w-full h-screen sm:px-[5%] sm:py-[3%] bg-black/5">
       <div
-        className={`backdrop-blur-xl border-2 border-gray-600 rounded-2xl overflow-hidden h-full grid relative ${gridColumns}`}
+        className={`grid h-full rounded-2xl overflow-hidden border-2 border-gray-600 ${
+          selectedUser
+            ? 'md:grid-cols-[1fr_2fr_1fr] xl:grid-cols-[1fr_3fr_1fr]'
+            : 'md:grid-cols-2'
+        }`}
       >
-        <Sidebar selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
-        <ChatContainer selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
-        
-        {/* Conditionally render the RightSidebar */}
-        {isRightSidebarVisible && (
-          <RightSidebar selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
-        )}
+        {/* Sidebar */}
+        <Sidebar  />
+
+        {/* Chat Container */}
+        <ChatContainer/>
+
+        {/* Right Sidebar */}
+        {selectedUser && <RightSidebar selectedUser={selectedUser} messages={messages} />}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default HomePage
+export default HomePage;

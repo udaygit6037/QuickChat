@@ -1,77 +1,129 @@
-import React, { useEffect, useRef } from 'react'
-import assets, { messagesDummyData } from '../assets/assets'
-import { fromatMessageTime } from '../lib/utils'
+import React, { useEffect, useRef, useState } from 'react';
+import assets from '../assets/assets';
+import { formatMessageTime } from '../lib/utils';
+import { useChat } from '../../context/ChatContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 
-// Correct way to define the component and receive props:
-const ChatContainer = ({ selectedUser, setSelectedUser }) => {
-  // Note the curly braces around the arguments ^
- const scrollEnd = useRef()
- useEffect(()=>{
-  if(scrollEnd.current)
-      {
-        scrollEnd.current.scrollIntoview({behaviour:"smooth"})
-      }
- },[])
-  return selectedUser ? (
-    <div className='h-full overflow-scroll relative backdrop-blur-lg'>
-      {/* ------------- header-------------*/}
-      <div className='flex items-center gap-3 py-3 mx-4 border-b border-b border-stone-500'>
-        <img src={assets.profile_martin} alt="" className='w-8 rounded-full' />
-        <p className='flex-1 text-lg text-white flex items-center gap-2'>
-          Martin Johnson
-          <span className='w-2 h-2 rounded-full bg-green-500'></span>
-        </p>
-        {/* The onClick handler for the arrow icon is correct */}
-        <img onClick={() => { setSelectedUser(null) }}
-          src={assets.arrow_icon} alt="" className='md:hidden max-w-7' />
-        {/* FIX: Corrected class name from 'max-md: hidden' to 'max-md:hidden' for Tailwind utility */}
-        <img src={assets.help_icon} alt=""
-          className='max-md:hidden max-w-5' />
-      </div>
-      {/* ------------- header ends-------------*/}
-      {/* Chat area for the chat */}
-      <div className='flex flex-col h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6'>
-        {/* FIX 1: Removed outer parentheses around messagesDummyData.map */}
-        {messagesDummyData.map((msg, index) => (
-          // FIX 2 & 3: Corrected 'itmes-ed' to 'items-end' and ensured correct string concatenation with template literals
-          <div key={index} className={`flex items-end gap-2 ${msg.senderId !== '680f50e4f10f3cd28382ecf9' ? 'justify-start' : 'justify-end'}`}>
-            {msg.image ? (
-              // FIX 4: Image tag is self-closing, removed redundant closing tag.
-              <img src={msg.image} alt='' className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-8' />
-            ) : (
-              // FIX 5, 6, 7: Corrected 'bg-voilet-500/30' (assuming typo, used 'violet-500/30') and fixed logic/typo in rounded class: 'rounded-br-npn' -> 'rounded-br-none' and 'rounded-bl-none'
-              <p className={` p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-violet-500/30 text-white ${msg.senderId === '680f50e4f10f3cd28382ecf9' ? 'rounded-br-none' : 'rounded-bl-none'}`}>{msg.text}</p>
-            )}
-            <div className='text-center text-xs'>
-              <img src={msg.senderId === '680f50e4f10f3cd28382ecf9' ? assets.avatar_icon : assets.profile_martin} alt=""
-                className='w-7 rounded-full' />
-              <p className='text-gray-500'>{fromatMessageTime(msg.createdAt)}</p>
+const ChatContainer = () => {
+    const { messages, selectedUser, setSelectedUser, sendMessage } = useChat();
+    const { authUser, onlineUsers } = useAuth();
+    const [newMessage, setNewMessage] = useState("");
+    const [image, setImage] = useState(null);
+    const [imageUrl, setImageUrl] = useState("");
+    const messagesEndRef = useRef(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImage(file);
+            setImageUrl(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() && !image) return;
+
+        let messageData = { text: newMessage };
+
+        if (image) {
+            const reader = new FileReader();
+            reader.readAsDataURL(image);
+            reader.onloadend = () => {
+                messageData.image = reader.result;
+                sendMessage(messageData);
+            };
+        } else {
+            sendMessage(messageData);
+        }
+        
+        setNewMessage("");
+        setImage(null);
+        setImageUrl("");
+    };
+    
+    if (!selectedUser) {
+        return (
+            // --- THIS IS THE CORRECTED LINE ---
+            // The initial 'flex' class has been removed to resolve the conflict with 'hidden'.
+            // 'md:flex' correctly applies flexbox display only on medium screens and up.
+            <div className="hidden md:flex flex-col items-center justify-center gap-2 text-white/50 bg-transparent h-full">
+                <img src={assets.logo_icon} alt="Logo" className="w-16 h-16 opacity-50" />
+                <p className="text-lg font-medium">Select a user to start chatting</p>
             </div>
-          </div>
-        ))}
-        <div ref={scrollEnd}></div>
-      
-      </div>
-         {/*----------bottom are -----------*/}
-        <div className='absolute bottom-0 left-0 right-0 flex items-center gap-3 p-3'>
-           <div className='flex-1 flex items-center bg-gray-100/12 px-3 rounded-full'>
-            <input type="text" placeholder='Sent a message' className='flex-1 text-sm p-3 border-none rounded-lg outline-none text-white placehoder-gray-400'/>
-            <input type="file" id='image' accept='image/png, image/jpeg' hidden />
-            <label htmlFor="image">
-              <img src={assets.gallery_icon} alt=""  className='w-5 mr-2 cursor-pointer'/>
-            </label>
-            <div>
-              <img src={assets.send_button} alt=""  className='w-7 cursor-pointer'/>
+        );
+    }
+    
+    const isOnline = onlineUsers?.includes(selectedUser._id);
+
+    return (
+        <div className="flex flex-col h-full bg-black/10 backdrop-blur-lg">
+            {/* Header */}
+            <div className="flex items-center gap-3 py-3 px-4 border-b border-white/10 bg-black/20 flex-shrink-0">
+                <img onClick={() => setSelectedUser(null)} src={assets.arrow_icon} alt="Back" className="md:hidden w-6 cursor-pointer" />
+                <img src={selectedUser.profilePic || assets.avatar_icon} alt={selectedUser.fullName} className="w-10 h-10 rounded-full object-cover"/>
+                <div className="flex-1">
+                    <p className="text-lg text-white font-semibold">{selectedUser.fullName}</p>
+                    <p className={`text-xs ${isOnline ? "text-green-400" : "text-white/60"}`}>{isOnline ? "Online" : "Offline"}</p>
+                </div>
+                <img src={assets.help_icon} alt="Info" className="w-6 h-6 cursor-pointer opacity-70" />
             </div>
-           </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+                {messages.map((msg) => (
+                    <div
+                        key={msg._id}
+                        className={`flex items-start gap-2.5 ${msg.senderId === authUser._id ? 'flex-row-reverse' : ''}`}
+                    >
+                        {msg.senderId !== authUser._id && (
+                            <img src={selectedUser.profilePic || assets.avatar_icon} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                        )}
+                        <div className={`flex flex-col gap-1 ${msg.senderId === authUser._id ? 'items-end' : ''}`}>
+                            <div className={`p-3 rounded-lg max-w-xs ${msg.senderId === authUser._id ? 'bg-purple-600 rounded-br-none' : 'bg-white/10 rounded-bl-none'}`}>
+                                {msg.image && <img src={msg.image} alt="media" className="rounded-lg mb-2" />}
+                                {msg.text && <p className="text-sm text-white break-words">{msg.text}</p>}
+                            </div>
+                            <span className="text-xs text-white/50">{formatMessageTime(msg.createdAt)}</span>
+                        </div>
+                    </div>
+                ))}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Bottom Input Bar */}
+            <form onSubmit={handleSendMessage} className="flex flex-col p-3 border-t border-white/10 bg-black/20 flex-shrink-0">
+                {imageUrl && (
+                    <div className="relative w-24 h-24 mb-2">
+                        <img src={imageUrl} alt="preview" className="w-full h-full object-cover rounded-lg" />
+                        <button onClick={() => {setImage(null); setImageUrl("");}} className="absolute top-1 right-1 bg-black/50 rounded-full p-1">&times;</button>
+                    </div>
+                )}
+                <div className="flex items-center gap-3">
+                    <div className="flex-1 flex items-center bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+                        <input
+                            type="text"
+                            placeholder="Send a message"
+                            value={newMessage}
+                            onChange={e => setNewMessage(e.target.value)}
+                            className="flex-1 bg-transparent outline-none text-white text-sm placeholder-white/40"
+                        />
+                        <input type="file" id="image" accept="image/*" onChange={handleImageChange} hidden />
+                        <label htmlFor="image">
+                            <img src={assets.gallery_icon} alt="Attach" className="w-5 cursor-pointer opacity-50 hover:opacity-100" />
+                        </label>
+                    </div>
+                    <button type="submit" className="p-0 bg-purple-600 rounded-full h-10 w-10 flex items-center justify-center hover:bg-purple-700 transition-colors">
+                        <img src={assets.send_button} alt="Send" className="w-5" />
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
-  ) : (
-    <div className='flex flex-col items-center justify-center gap-2 text-gray-500 bg-white/10 max-md:hidden'>
-      <img src={assets.logo_icon} className='max-w-16' alt="" />
-      <p className='text-lg font-medium text-white'> Chat anytime, anywhere</p>
-    </div>
-  )
-}
+    );
+};
 
-export default ChatContainer
+export default ChatContainer;

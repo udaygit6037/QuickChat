@@ -1,28 +1,19 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client' // 👈 FIX: Import createRoot
+
+import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import {BrowserRouter} from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '../context/AuthContext.jsx'
+import { ChatProvider } from '../context/ChatContext.jsx'
 
-// Get the root element
-const container = document.getElementById('root');
+createRoot(document.getElementById('root')).render(
 
-// Create the root object
-const root = createRoot(container);
-
-// Render the application
-root.render(
-  // Use StrictMode for development checks
-  <StrictMode> 
-    <BrowserRouter>
-      {/* AuthProvider wraps the whole app to provide context */}
-      <AuthProvider>
+  <BrowserRouter>
+    <AuthProvider>
+      <ChatProvider>
         <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>
-);
+      </ChatProvider>
+    </AuthProvider>
+  </BrowserRouter>,
 
-// ❌ The original issue was that the createRoot call was incomplete:
-// createRoot(document.getElementById('root')).render( /* ... JSX ... */ )
+)
