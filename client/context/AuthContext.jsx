@@ -99,7 +99,20 @@ export const AuthProvider = ({ children }) => {
         toast.success("Logged out successfully");
     };
     
-    const value = { authUser, login, signup, logout, onlineUsers, socket, axios: axiosInstance, loading };
+     const updateProfile = async (profileData) => {
+        try {
+            const res = await api.put("/auth/update-profile", profileData);
+            
+            // Update UI context after successful change
+            setAuthUser(res.data.user);
+
+            return res.data.user;
+        } catch (error) {
+            console.error("Update profile error:", error);
+            throw error;
+        }
+    };
+    const value = { authUser, login, signup, logout, onlineUsers, socket, axios: axiosInstance, loading ,updateProfile};
 
     return (
         <AuthContext.Provider value={value}>

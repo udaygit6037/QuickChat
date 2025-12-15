@@ -1,8 +1,10 @@
 import React from 'react';
 import assets from '../assets/assets';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const RightSidebar = ({ selectedUser, messages }) => {
   
+  const { logout } = useAuth();
   if (!selectedUser) return null;
 
   const userMedia = messages.filter(
@@ -40,7 +42,9 @@ const RightSidebar = ({ selectedUser, messages }) => {
       </div>
 
       {/* Logout Button */}
-      <button className="mt-auto bg-violet-500 text-white py-2 rounded-lg hover:bg-violet-600 transition">
+      <button 
+      onClick={logout}
+      className="mt-auto bg-violet-500 text-white py-2 rounded-lg hover:bg-violet-600 transition">
         Logout
       </button>
     </div>
