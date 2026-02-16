@@ -6,11 +6,13 @@ import { connectDB } from "./lib/db.js";
 import userRouter from "./routes/user.routes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import { Server } from "socket.io";
-
+import path from "path";
 // Create express app and HTTP server
 const app = express();
 const server = http.createServer(app);
 
+
+const __dirname = path.resolve();
 // Initialize socket.io server
 export const io = new Server(server, {
   cors: {
@@ -57,6 +59,11 @@ app.use("/api/messages", messageRouter);
 // Database connection
 await connectDB();
 
+
+app.use(express.static(path.join(__dirname, "client/dist")));
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+});
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () =>

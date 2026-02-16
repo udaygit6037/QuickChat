@@ -46,22 +46,14 @@ import { useChat } from '../../context/ChatContext.jsx';
 
 
 const HomePage = () => {
-  // ❌ REMOVE: const [selectedUser, setSelectedUser] = useState(null);
-  // ❌ REMOVE: const [messages, setMessages] = useState(messagesDummyData);
 
-  // ✅ USE CONTEXT: Get selectedUser from the global state
   const { selectedUser, messages } = useChat(); 
-   // Note: If messagesDummyData is only needed for the initial load of the context, 
-   // you don't need the local [messages, setMessages] here. Assuming 'messages' 
-   // comes from the context now.
-
-  // Determine the column span class for the ChatContainer
+  
   const chatContainerSpanClass = selectedUser ? '' : 'md:col-span-2';
 
   return (
     <div className="w-full h-screen sm:px-[5%] sm:py-[3%] bg-black/5">
-      <div
-        // Always define the 3-column grid structure at md and xl breakpoints.
+      <div // Always define the 3-column grid structure at md and xl breakpoints.
         className={`grid h-full rounded-2xl overflow-hidden border-2 border-gray-600 
           md:grid-cols-[1fr_2fr_1fr] xl:grid-cols-[1fr_3fr_1fr]
         `}
@@ -78,7 +70,7 @@ const HomePage = () => {
         {selectedUser && <RightSidebar selectedUser={selectedUser} messages={messages} />}
       </div>
     </div>
-  );
+ );
 };
 
 export default HomePage;
